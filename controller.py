@@ -1,45 +1,61 @@
-﻿# Связующая часть между model и view
-import text
+﻿import text
 import view
 import model
 
-def find_contact():
-    word = view.input_data(text.input_search_word)
-    result = model.find_contact(word)
-    view.show_contact(result, text.contacts_not_found(word))
+view.print_message(text.welcome)
+lang_dig = int(view.input_data(text.select_a_language))
+if lang_dig == 0:
+    lang = text.EngText()
+else:
+    lang = text.RusText()   
+def find_contact(phones: model.PhoneBook):
+    word = view.input_data(lang.input_search_word)
+    result = phones.find_contact(word)
+    view.show_contact(result, lang.contacts_not_found(word))
     
-def start_app():    
+def start_app():        
+    pb = model.PhoneBook() 
+    total = 0  
     while True:
-        choice = view.main_menu()
+        choice = view.main_menu(lang_dig)
         match choice:
             case 1:
-                model.open_file()
-                view.print_message(text.load_successful)
+                pb.open_file()
+                view.print_message(lang.load_successful)
+                total = int(pb.total_id())
             case 2:
-                model.safe_file()
-                view.print_message(text.safe_successful)
+                pb.safe_file()
+                view.print_message(lang.safe_successful)
             case 3:
-                pb = model.phone_book
-                view.show_contact(pb, text.empty_phone_book)
+                view.show_contact(pb.phonebook, lang.empty_phone_book)
             case 4:
-                contact = view.add_contact(text.new_contact)
-                model.new_contaсt(contact)
-                view.print_message(text.new_contact_added_successful(contact[0]))
+                contact = view.add_contact(lang.new_contact)
+                pb.new_contaсt(contact)
+                view.print_message(lang.new_contact_added_successful(contact[0]))
             case 5:
-                find_contact()
+                find_contact(pb)
             case 6:
-                find_contact()
-                pb = model.phone_book
-                c_id = int(view.input_data(text.input_id_change_contact))
-                c_contact = view.add_contact(text.change_contact, pb[c_id])
-                model.change_contact(c_id, c_contact)
-                view.print_message(text.contact_changed_successful(c_contact[0]))
+                find_contact(pb)
+                while True:
+                    c_id = int(view.input_data(lang.input_id_change_contact))
+                    if c_id <= total:
+                        c_contact = view.add_contact(lang.change_contact, pb.phonebook[c_id])
+                        pb.change_contact(c_id, c_contact)
+                        view.print_message(lang.contact_changed_successful(c_contact[0]))
+                        break
+                    else:
+                        view.print_message(lang.not_available_id(total))    
             case 7:
-                find_contact()
-                c_id = int(view.input_data(text.input_id_delete_contact))
-                name = model.delete_contact(c_id)[0]
-                view.print_message(text.contact_deleted_successful(name))
+                find_contact(pb)
+                while True:
+                    c_id = int(view.input_data(lang.input_id_delete_contact))
+                    if c_id <= total:
+                        name = pb.delete_contact(c_id)[0]
+                        view.print_message(lang.contact_deleted_successful(name))
+                        break
+                    else:
+                        view.print_message(lang.not_available_id(total))             
             case 8:
-                view.print_message(text.good_bay)
+                view.print_message(lang.good_bay)
                 break
         
